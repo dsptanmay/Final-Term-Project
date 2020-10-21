@@ -23,18 +23,19 @@ class Student:
         print("-" * TERM.columns)
         actions = ["Borrow A Book", "Return A Book", "See All Books", "EXIT"]
 
-        action = qr.select(
-            "Choose an action:", choices=actions, default=actions[3]
-        ).ask()
+        while True:
+            action = qr.select(
+                "Choose an action:", choices=actions, default=actions[3]
+            ).ask()
 
-        if action == actions[0]:
-            self.borrowBook()
-        elif action == actions[1]:
-            self.returnBook()
-        elif action == actions[2]:
-            self.seeAllBooks()
-        else:
-            exit()
+            if action == actions[0]:
+                self.borrowBook()
+            elif action == actions[1]:
+                self.returnBook()
+            elif action == actions[2]:
+                self.seeAllBooks()
+            else:
+                exit()
 
     def borrowBook(self):
         """Borrow Method. Provides borrowing functionality for both Student & Teacher Class."""
@@ -123,13 +124,13 @@ class Teacher(Student):
     def removeBook(self):
         """Remove Book Method. Only for Teacher Class"""
         cont = True
-        while True:
+        while cont:
             isbn = qr.text(
                 "Enter the ISBN of the Book:",
                 validate=lambda x: type(x) == int and len(x) > 5,
             ).ask()
 
-            cont = qr.confirm("Do you wish to continue?",default=False).ask()
+            cont = qr.confirm("Do you wish to continue?", default=False).ask()
 
 
 class MainApp:
