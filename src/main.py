@@ -1,5 +1,7 @@
 import os
+from re import split
 import questionary as qr
+import questionary
 import plotly.graph_objects as go
 from tabulate import tabulate
 import csv
@@ -11,9 +13,6 @@ class Student:
 
     Used as base class for `Teacher` Class
     """
-
-    def __init__(self) -> None:
-        pass
 
     def run(self) -> None:
         """Run method for Student Class"""
@@ -43,12 +42,39 @@ class Student:
 
     def returnBook(self):
         """Return Method. Provides return functionality for both Student & Teacher Class."""
-        pass
+        with open("data/borrowed.csv", "r") as fileObject:
+            reader = csv.reader(fileObject)
+            cur_ids = []
+            for row in reader:
+                cur_ids.append(row[0])
+
+        person = qr.autocomplete(
+            "Enter the name of the Person who borrowed a book:",
+            choices=cur_ids,
+            validate=lambda x: x in cur_ids,
+        ).ask()
 
     def seeAllBooks(self):
         """See All Method. Allows either students or teachers to see All books present."""
         with open("data/books.csv", "r") as fileObject:
-            pass
+            reader = csv.reader(fileObject)
+            books = list()
+            for row in reader:
+                books.append(list(row))
+
+            print(
+                tabulate(
+                    books,
+                    headers=[
+                        "ISBN",
+                        "Book Title",
+                        "No. of Pages",
+                        "Author",
+                        "Category",
+                    ],
+                    tablefmt="fancy_grid",  # for full list see dir(tabulate_formats),
+                )
+            )
 
 
 class Teacher(Student):
@@ -74,7 +100,12 @@ class Teacher(Student):
             if username == "root" and password == "password":
                 break
             else:
-                print("Wrong passsword!\nTry again!")
+                print("-" * os.get_terminal_size().columns)
+                print(
+                    "Wrong passsword!\nTry again!".center(
+                        os.get_terminal_size().columns
+                    ).capitalize()
+                )
                 print("-" * os.get_terminal_size().columns)
 
     def run(self) -> None:
