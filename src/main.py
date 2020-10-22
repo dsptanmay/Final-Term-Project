@@ -1,8 +1,8 @@
 import os
-from re import split
 import questionary as qr
 import plotly.graph_objects as go
 from tabulate import tabulate
+from setup import setup
 import csv
 
 
@@ -99,10 +99,13 @@ class Teacher(Student):
         super().__init__()
         while True:
             username = qr.text(
-                "Enter your username:", default="root", validate=lambda x: len(x) > 0
+                "Enter your username:",
+                default="root",
+                validate=lambda x: len(x) > 0,
             ).ask()
             password = qr.password(
-                "Enter the password:", validate=lambda x: len(x) > 0
+                "Enter the password:",
+                validate=lambda x: len(x) > 0,
             ).ask()
 
             if username == "root" and password == "password":
@@ -119,17 +122,19 @@ class Teacher(Student):
     def run(self) -> None:
         """Run method for Teacher Class"""
         actions = [
-            "Add A Book"  # 0,
-            "Remove a Book"  # 1,
-            "See All Books"  # 2,
-            "Borrow A Book"  # 3,
-            "Return A Book"  # 4,
-            "EXIT"  # 5,
+            "Add A Book",  # 0,
+            "Remove a Book",  # 1,
+            "See All Books",  # 2,
+            "Borrow A Book",  # 3,
+            "Return A Book",  # 4,
+            "EXIT",  # 5,
         ]
 
         while True:
             action = qr.select(
-                "Choose an action:", choices=actions, default=actions[5]
+                "Choose an action:",
+                choices=actions,
+                default=actions[5],
             ).ask()
 
             if action == actions[5]:
@@ -158,7 +163,10 @@ class Teacher(Student):
                 validate=lambda x: type(x) == int and len(x) > 5,
             ).ask()
 
-            cont = qr.confirm("Do you wish to continue?", default=False).ask()
+            cont = qr.confirm(
+                "Do you wish to continue?",
+                default=False,
+            ).ask()
 
     def removeBook(self):
         """Remove Book Method. Only for Teacher Class"""
@@ -174,10 +182,20 @@ class Teacher(Student):
 
 class MainApp:
     def __init__(self) -> None:
+        try:
+            setup()
+        except Exception:
+            print("An error occurred!")
+            exit()
+        else:
+            print("All necessary modules installed successfully!")
+
         options = ["TEACHER MODE", "STUDENT MODE"]
-
-        action = qr.select("Choose a mode:", choices=options, default=options[1]).ask()
-
+        action = qr.select(
+            "Choose a mode:",
+            choices=options,
+            default=options[1],
+        ).ask()
         main = None
         if action == options[1]:
             main = Student()
