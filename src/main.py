@@ -85,7 +85,7 @@ class Student:
                         "Author",
                         "Category",
                     ],
-                    tablefmt="fancy_grid",  # for full list see dir(tabulate_formats),
+                    tablefmt="fancy_grid",
                 )
             )
 
