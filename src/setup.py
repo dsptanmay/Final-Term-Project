@@ -5,7 +5,12 @@ import pkg_resources
 
 def setup():
     installed = {pkg.key for pkg in pkg_resources.working_set}
-    required = {"plotly", "questionary", "tabulate", "black", "arrow"}
+    required = {
+        "plotly",
+        "questionary",
+        "tabulate",
+        "black",
+    }  # "arrow"
     missing = required - installed
 
     python = sys.executable
