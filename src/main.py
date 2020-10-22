@@ -80,12 +80,11 @@ class Student:
                 data = list(reader)
                 data.append(toBeIns)
             fileObject.close()
-        
-        with open("data/borrowed.csv","wa") as fileObj:
+
+        with open("data/borrowed.csv", "w") as fileObj:
             writer = csv.writer(fileObj)
             for _list in data:
                 writer.writerow(_list)
-            
 
     def returnBook(self):
         """Return Method. Provides return functionality for both Student & Teacher Class."""
