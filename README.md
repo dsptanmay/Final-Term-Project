@@ -22,6 +22,6 @@ Final Term Project for HXLS
 
 ## Usage:
 
-Download the entire repo as a zip or clone it using `git clone`.
+Download the entire repo as a zip or clone it using `git clone https://github.com/dsptanmay/Final-Term-Project.git`.
 
 Run `main.py` to get started.
