@@ -14,10 +14,13 @@ class Student:
     Used as base class for `Teacher` Class
     """
 
+    def __init__(self) -> None:
+        self.bookPath = "data/MOCK_DATA.csv"
+        self.borrowPath = "data/borrowed.csv"
+
     def run(self) -> None:
         """Run method for Student Class"""
 
-        self.bookPath = "data/MOCK_DATA.csv"
         TERM = os.get_terminal_size()
         print("-" * TERM.columns)
         print("STUDENT Mode".center(TERM.columns))
@@ -109,12 +112,12 @@ class Student:
             for row in reader:
                 books.append(list(row))
 
-            num_to_disp = qr.text(
+            num_to_disp: int = qr.text(
                 "Enter the number of rows to display:",
-                validate=lambda x: x < len(books) and type(x) == int,
+                validate=lambda x: int(x) < len(books) and type(x) == int,
             ).ask()
 
-            to_be_disp = books[0:num_to_disp]
+            to_be_disp = books[0 : int(num_to_disp)]
             print(
                 tabulate(
                     to_be_disp,
