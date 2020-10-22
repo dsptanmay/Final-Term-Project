@@ -1,7 +1,6 @@
 import os
 from re import split
 import questionary as qr
-import questionary
 import plotly.graph_objects as go
 from tabulate import tabulate
 import csv
@@ -16,6 +15,8 @@ class Student:
 
     def run(self) -> None:
         """Run method for Student Class"""
+
+        self.bookPath = "data/MOCK_DATA.csv"
         TERM = os.get_terminal_size()
         print("-" * TERM.columns)
         print("STUDENT Mode".center(TERM.columns))
@@ -56,18 +57,25 @@ class Student:
 
     def seeAllBooks(self):
         """See All Method. Allows either students or teachers to see All books present."""
-        with open("data/books.csv", "r") as fileObject:
+
+        with open(self.bookPath, "r") as fileObject:
             reader = csv.reader(fileObject)
             books = list()
             for row in reader:
                 books.append(list(row))
 
+            num_to_disp = qr.text(
+                "Enter the number of rows to display:",
+                validate=lambda x: x < len(books) and type(x) == int,
+            ).ask()
+
+            to_be_disp = books[0:num_to_disp]
             print(
                 tabulate(
-                    books,
+                    to_be_disp,
                     headers=[
                         "ISBN",
-                        "Book Title",
+                        "Book Name",
                         "No. of Pages",
                         "Author",
                         "Category",
