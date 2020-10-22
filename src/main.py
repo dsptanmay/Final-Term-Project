@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from tabulate import tabulate
 from setup import setup
 import csv
+from datetime import date
 
 
 class Student:
@@ -44,7 +45,47 @@ class Student:
 
     def borrowBook(self):
         """Borrow Method. Provides borrowing functionality for both Student & Teacher Class."""
-        pass
+        with open(self.bookPath, "r") as fileObject:
+            reader = csv.reader(fileObject)
+            data = list(reader)
+            currentBooks = []
+            for row in reader:
+                currentBooks.append(row[1])
+
+        book = qr.autocomplete(
+            "Enter the Name of the Book that you want to borrow:",
+            choices=currentBooks,
+            validate=lambda x: x in currentBooks,
+        ).ask()
+        borrowRow = []
+        for row in data:
+            if row[1] == book:
+                borrowRow = row
+                break
+
+        toBeIns = [
+            borrowRow[0],
+            borrowRow[1],
+            borrowRow[3],
+            borrowRow[4],
+            str(date.today()),
+        ]
+
+        with open("data/borrowed.csv", "a") as fileObject:
+            reader = csv.reader(fileObject)
+            if len(list(reader)) == 0:
+                data = []
+                data.append(toBeIns)
+            else:
+                data = list(reader)
+                data.append(toBeIns)
+            fileObject.close()
+        
+        with open("data/borrowed.csv","wa") as fileObj:
+            writer = csv.writer(fileObj)
+            for _list in data:
+                writer.writerow(_list)
+            
 
     def returnBook(self):
         """Return Method. Provides return functionality for both Student & Teacher Class."""
