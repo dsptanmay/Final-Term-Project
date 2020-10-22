@@ -21,7 +21,12 @@ class Student:
         print("-" * TERM.columns)
         print("STUDENT Mode".center(TERM.columns))
         print("-" * TERM.columns)
-        actions = ["Borrow A Book", "Return A Book", "See All Books", "EXIT"]
+        actions = [
+            "Borrow A Book",
+            "Return A Book",
+            "See All Books",
+            "EXIT",
+        ]
 
         while True:
             action = qr.select(
