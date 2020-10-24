@@ -1,10 +1,10 @@
 import os
-import questionary as qr
-import plotly.graph_objects as go
+import questionary
 from tabulate import tabulate
 from setup import setup
 import csv
 from datetime import date
+import re
 
 
 class Student:
@@ -33,7 +33,7 @@ class Student:
         ]
 
         while True:
-            action = qr.select(
+            action = questionary.select(
                 "Choose an action:", choices=actions, default=actions[3]
             ).ask()
 
@@ -48,46 +48,57 @@ class Student:
 
     def borrowBook(self):
         """Borrow Method. Provides borrowing functionality for both Student & Teacher Class."""
-        with open(self.bookPath, "r") as fileObject:
-            reader = csv.reader(fileObject)
+
+        with open(self.borrowPath, "r") as file:
+            reader = csv.reader(file)
+
             data = list(reader)
-            currentBooks = []
-            for row in reader:
-                currentBooks.append(row[1])
+            cur_ids = []
+            for row in data:
+                if len(row) == 4:
+                    cur_ids.append(row[1])
 
-        book = qr.autocomplete(
-            "Enter the Name of the Book that you want to borrow:",
-            choices=currentBooks,
-            validate=lambda x: x in currentBooks,
-        ).ask()
-        borrowRow = []
-        for row in data:
-            if row[1] == book:
-                borrowRow = row
-                break
+            file.close()
 
-        toBeIns = [
-            borrowRow[0],
-            borrowRow[1],
-            borrowRow[3],
-            borrowRow[4],
-            str(date.today()),
-        ]
+        rollNo = questionary.text("Enter your roll No:", default="4501").ask()
 
-        with open("data/borrowed.csv", "a") as fileObject:
-            reader = csv.reader(fileObject)
-            if len(list(reader)) == 0:
-                data = []
-                data.append(toBeIns)
-            else:
-                data = list(reader)
-                data.append(toBeIns)
+        if rollNo in cur_ids:
+            print("You have already borrowed a book!")
+            return
+
+        else:
+            name = questionary.text("Enter your name: ",).ask()
+
+            print("Name & Roll No. accepted!")
+
+        with open(self.bookPath, "r") as fileObj:
+
+            data = list(csv.reader(fileObj))
+
+            cur_books = [row[1] for row in data]
+
+            today = str(date.today())
+
+            fileObj.close()
+
+        book = questionary.autocomplete(
+            "Choose a book", choices=cur_books, validate=lambda b: b in cur_books).ask()
+
+        toBeIns = [book, rollNo, name, today]
+
+        with open(self.borrowPath, "r") as fileObject:
+            data = list(csv.reader(fileObject))
+
+            data.append(toBeIns)
+
             fileObject.close()
 
-        with open("data/borrowed.csv", "w") as fileObj:
-            writer = csv.writer(fileObj)
-            for _list in data:
-                writer.writerow(_list)
+        with open(self.borrowPath, "w") as file:
+            writer = csv.writer(file)
+            writer.writerows(data)
+            print("Book borrowed successfully!")
+            file.close()
+            return
 
     def returnBook(self):
         """Return Method. Provides return functionality for both Student & Teacher Class."""
@@ -97,7 +108,7 @@ class Student:
             for row in reader:
                 cur_ids.append(row[0])
 
-        person = qr.autocomplete(
+        person = questionary.autocomplete(
             "Enter the name of the Person who borrowed a book:",
             choices=cur_ids,
             validate=lambda x: x in cur_ids,
@@ -110,17 +121,12 @@ class Student:
             reader = csv.reader(fileObject)
             books = list()
             for row in reader:
-                books.append(list(row))
+                if len(row) == 5:
+                    books.append(list(row))
 
-            num_to_disp: int = qr.text(
-                "Enter the number of rows to display:",
-                validate=lambda x: int(x) < len(books) and type(x) == int,
-            ).ask()
-
-            to_be_disp = books[0 : int(num_to_disp)]
             print(
                 tabulate(
-                    to_be_disp,
+                    books,
                     headers=[
                         "ISBN",
                         "Book Name",
@@ -146,12 +152,12 @@ class Teacher(Student):
     def __init__(self) -> None:
         super().__init__()
         while True:
-            username = qr.text(
+            username = questionary.text(
                 "Enter your username:",
                 default="root",
                 validate=lambda x: len(x) > 0,
             ).ask()
-            password = qr.password(
+            password = questionary.password(
                 "Enter the password:",
                 validate=lambda x: len(x) > 0,
             ).ask()
@@ -179,7 +185,7 @@ class Teacher(Student):
         ]
 
         while True:
-            action = qr.select(
+            action = questionary.select(
                 "Choose an action:",
                 choices=actions,
                 default=actions[5],
@@ -204,28 +210,64 @@ class Teacher(Student):
 
     def addBook(self):
         """Add Book Method. Only for Teacher Class"""
-        cont = True
-        while cont:
-            isbn = qr.text(
-                "Enter the ISBN of the book:",
-                validate=lambda x: type(x) == int and len(x) > 5,
-            ).ask()
+        with open(self.bookPath, "r") as fileObject:
+            data = list(csv.reader(fileObject))
 
-            cont = qr.confirm(
-                "Do you wish to continue?",
-                default=False,
-            ).ask()
+            cur_isbn = []
+            cur_categ = []
+            for row in data:
+                if len(row) == 5:
+                    cur_isbn.append(row[0])
+                    cur_categ.append(row[4])
+
+            fileObject.close()
+
+        pattern_isbn = "^[0-9]{3}-[0-9]{4}-[0-9]{3}$"
+        checker_isbn = re.compile(pattern=pattern_isbn)
+
+        while True:
+            isbn_new = questionary.text(
+                "Enter the ISBN of your book(It should be of the format ###-####-###): ").ask()
+            if isbn_new in cur_isbn:
+                print("ISBN is already in use!")
+                print("Try Again!")
+            elif not checker_isbn.match(isbn_new):
+                print("Incorrect Format!\n\tTry Again!")
+            else:
+                break
+
+        bookNew = questionary.text("Enter the Book Name:").ask()
+
+        while True:
+            pagesNew = int(input("Enter the No. of Pages: "))
+
+            if pagesNew <= 1:
+                print("Incorrect Value!\n")
+            else:
+                break
+
+        authorNew = questionary.text("Enter the Author's name:").ask()
+
+        categoryNew = questionary.autocomplete(
+            "Enter the Category: ",
+            choices=cur_categ,
+            validate=lambda cat: cat in cur_categ).ask()
+
+        toBeIns = [isbn_new, bookNew, pagesNew, authorNew, categoryNew]
+
+        data.append(toBeIns)
+
+        with open(self.bookPath, "w") as fileObject:
+            writer = csv.writer(fileObject)
+            writer.writerows(data)
+            fileObject.close()
 
     def removeBook(self):
         """Remove Book Method. Only for Teacher Class"""
-        cont = True
-        while cont:
-            isbn = qr.text(
-                "Enter the ISBN of the Book:",
-                validate=lambda x: type(x) == int and len(x) > 5,
-            ).ask()
-
-            cont = qr.confirm("Do you wish to continue?", default=False).ask()
+        isbn = questionary.text(
+            "Enter the ISBN of the Book:",
+            validate=lambda x: type(x) == int and len(x) > 5,
+        ).ask()
 
 
 class MainApp:
@@ -239,7 +281,7 @@ class MainApp:
             print("All necessary modules installed successfully!")
 
         options = ["TEACHER MODE", "STUDENT MODE"]
-        action = qr.select(
+        action = questionary.select(
             "Choose a mode:",
             choices=options,
             default=options[1],
