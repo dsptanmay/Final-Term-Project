@@ -24,4 +24,4 @@ Final Term Project for HXLS
 
 Download the entire repo as a zip or clone it using `git clone https://github.com/dsptanmay/Final-Term-Project.git`.
 
-Run `main.py` to get started.
+Run `src/main.py` to get started.
