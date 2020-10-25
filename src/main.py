@@ -5,6 +5,7 @@ from setup import setup
 import csv
 from datetime import date
 import re
+import pandas as pd
 
 
 class Student:
@@ -163,7 +164,10 @@ class Teacher(Student):
             ).ask()
 
             if username == "root" and password == "password":
-                break
+                print("Username and password validated successfully!")
+                print("-"*os.get_terminal_size().columns)
+                print("Teacher Mode".center(os.get_terminal_size().columns))
+                print("-"*os.get_terminal_size().columns)
             else:
                 print("-" * os.get_terminal_size().columns)
                 print(
@@ -218,7 +222,8 @@ class Teacher(Student):
             for row in data:
                 if len(row) == 5:
                     cur_isbn.append(row[0])
-                    cur_categ.append(row[4])
+                    if row[4] not in cur_categ:
+                        cur_categ.append(row[4])
 
             fileObject.close()
 
@@ -257,10 +262,18 @@ class Teacher(Student):
 
         data.append(toBeIns)
 
-        with open(self.bookPath, "w") as fileObject:
-            writer = csv.writer(fileObject)
-            writer.writerows(data)
-            fileObject.close()
+        try:
+            with open(self.bookPath, "w") as fileObject:
+                writer = csv.writer(fileObject)
+                writer.writerows(data)
+                fileObject.close()
+        except Exception as e:
+            print(e)
+            print("Unable to add book")
+            return
+        else:
+            print("Book added successfully!")
+            return
 
     def removeBook(self):
         """Remove Book Method. Only for Teacher Class"""
