@@ -6,6 +6,9 @@ import csv
 from datetime import date
 import re
 import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from pytrends.request import TrendReq
 
 
 class Student:
@@ -138,6 +141,16 @@ class Student:
                     tablefmt="fancy_grid",
                 )
             )
+
+    def plotting(self):
+        """
+        Method for plotting a graph based on interest in book over a period of time.
+        """
+        timeFrames = {
+            "1 Month": "today 1-m",
+            "3 Months": "today 3-m",
+            "12 Months": "today 12-m"
+        }
 
 
 class Teacher(Student):
