@@ -35,6 +35,8 @@ class Student:
             "Borrow A Book",
             "Return A Book",
             "See All Books",
+            "Search by Author",
+            "Search by Genre"
             "EXIT",
         ]
 
@@ -45,15 +47,24 @@ class Student:
 
             if action == actions[0]:
                 self.borrowBook()
+           
             elif action == actions[1]:
                 self.returnBook()
+           
             elif action == actions[2]:
+                pass
+
+            elif action == actions[3]:
+                pass
+
+            elif action == actions[4]:
                 self.seeAllBooks()
             else:
                 exit()
 
     def borrowBook(self):
-        """Borrow Method. Provides borrowing functionality for both Student & Teacher Class."""
+        """Borrow Method. 
+        Provides borrowing functionality for both Student & Teacher Class."""
 
         with open(self.borrowPath, "r") as file:
             reader = csv.reader(file)
@@ -183,7 +194,12 @@ class Student:
             fig = go.Figure(data=data)
             fig.show()
 
-    def searchBooks(self):
+
+    def searchByAuthor(self):
+        pass
+
+
+    def searchByGenre(self):
         pass
 
 # TODO:  Search : Author/ Books Name
