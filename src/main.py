@@ -1,14 +1,16 @@
 import os
-import questionary
-from tabulate import tabulate
-from setup import setup
 import csv
 from datetime import date
 import re
+
+
+from setup import setup
+from tabulate import tabulate
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pytrends.request import TrendReq
+import questionary
 
 
 class Student:
@@ -118,8 +120,11 @@ class Student:
             validate=lambda x: x in cur_ids,
         ).ask()
 
+        # capping fine
+
     def seeAllBooks(self):
-        """See All Method. Allows either students or teachers to see All books present."""
+        """See All Method. 
+        Allows either students or teachers to see All books present."""
 
         with open(self.bookPath, "r") as fileObject:
             reader = csv.reader(fileObject)
@@ -142,7 +147,7 @@ class Student:
                 )
             )
 
-    def plotting(self):
+    def plotting(self, name):
         """
         Method for plotting a graph based on interest in book over a period of time.
         """
@@ -151,6 +156,37 @@ class Student:
             "3 Months": "today 3-m",
             "12 Months": "today 12-m"
         }
+
+        tmf = questionary.select("Choose the timeframe for the data:", choices=list(
+            timeFrames.keys()), default="3 Months").ask()
+
+        topics = [name]
+
+        pytrend = TrendReq()
+
+        pytrend.build_payload(kw_list=topics, timeframe=tmf)
+
+        df = pytrend.interest_over_time()
+
+        df.drop(labels="isPartial", inplace=True)
+
+        try:
+            data = go.Scatter(
+                x=df.index, y=df[name], name=name, mode="lines+markers")
+
+        except Exception as e:
+            print("Error in building figure!")
+            print(e)
+            return
+
+        else:
+            fig = go.Figure(data=data)
+            fig.show()
+
+    def searchBooks(self):
+        pass
+
+# TODO:  Search : Author/ Books Name
 
 
 class Teacher(Student):
