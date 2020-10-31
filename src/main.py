@@ -23,6 +23,14 @@ class Student:
     def __init__(self) -> None:
         self.bookPath = "data/MOCK_DATA.csv"
         self.borrowPath = "data/borrowed.csv"
+        self.baseActions = [
+            "Borrow A Book",
+            "Return A Book",
+            "See All Books",
+            "Search By Author",
+            "Search By Genre",
+            "EXIT",
+        ]
 
     def run(self) -> None:
         """Run method for Student Class"""
@@ -31,35 +39,32 @@ class Student:
         print("-" * TERM.columns)
         print("STUDENT Mode".center(TERM.columns))
         print("-" * TERM.columns)
-        actions = [
-            "Borrow A Book",
-            "Return A Book",
-            "See All Books",
-            "Search by Author",
-            "Search by Genre" "EXIT",
-        ]
 
         while True:
             action = questionary.select(
-                "Choose an action:", choices=actions, default=actions[3]
+                "Choose an action:",
+                choices=self.baseActions,
+                default=self.baseActions[5],
             ).ask()
 
-            if action == actions[0]:
+            if action == self.baseActions[0]:
                 self.borrowBook()
 
-            elif action == actions[1]:
+            elif action == self.baseActions[1]:
                 self.returnBook()
 
-            elif action == actions[2]:
-                pass
-
-            elif action == actions[3]:
-                pass
-
-            elif action == actions[4]:
+            elif action == self.baseActions[2]:
                 self.seeAllBooks()
-            else:
-                exit()
+
+            elif action == self.baseActions[3]:
+                self.searchByAuthor()
+
+            elif action == self.baseActions[4]:
+                self.searchByGenre()
+
+            elif action == self.baseActions[5]:
+                print("Exiting program now...")
+                exit(0)
 
     def borrowBook(self):
         """Borrow Method.
@@ -68,18 +73,22 @@ class Student:
         with open(self.borrowPath, "r") as file:
             reader = csv.reader(file)
 
-            data = list(reader)
+            data_borrow = list(reader)
             cur_ids = []
-            for row in data:
+            for row in data_borrow:
                 if len(row) == 4:
                     cur_ids.append(row[1])
 
             file.close()
 
-        rollNo = questionary.text("Enter your roll No:", default="4501").ask()
+        rollNo = questionary.text(
+            "Enter your Admission No:",
+            validate=lambda x: len(x) == 4 and str(x).isdigit() == True,
+        ).ask()
 
         if rollNo in cur_ids:
-            print("You have already borrowed a book!")
+            print("You have already borrowed a book.")
+            print("First return that book!")
             return
 
         else:
@@ -87,13 +96,15 @@ class Student:
                 "Enter your name: ",
             ).ask()
 
-            print("Name & Roll No. accepted!")
+            print("Name & Admin No. accepted!")
 
         with open(self.bookPath, "r") as fileObj:
+            data_books = []
+            for row in csv.reader(fileObj):
+                if len(row) != 0:
+                    data_books.append(row)
 
-            data = list(csv.reader(fileObj))
-
-            cur_books = [row[1] for row in data]
+            cur_books = [row[1] for row in data_books]
 
             today = str(date.today())
 
@@ -108,15 +119,19 @@ class Student:
         toBeIns = [book, rollNo, name, today]
 
         with open(self.borrowPath, "r") as fileObject:
-            data = list(csv.reader(fileObject))
+            reader = csv.reader(fileObj)
 
-            data.append(toBeIns)
+            for row in reader:
+                if len(row) != 0:
+                    data_borrow.append(row)
+
+            data_borrow.append(toBeIns)
 
             fileObject.close()
 
         with open(self.borrowPath, "w") as file:
             writer = csv.writer(file)
-            writer.writerows(data)
+            writer.writerows(data_borrow)
             print("Book borrowed successfully!")
             file.close()
             return
@@ -124,23 +139,26 @@ class Student:
     def returnBook(self):
         """Return Method.
         Provides return functionality for both Student & Teacher Class."""
-        with open("data/borrowed.csv", "r") as fileObject:
+        with open(self.borrowPath, "r") as fileObject:
             reader = csv.reader(fileObject)
-            cur_ids = []
-            for row in reader:
-                cur_ids.append(row[0])
+            data = [row for row in reader if len(row) == 4]
+            fileObject.close()
 
-        person = questionary.autocomplete(
-            "Enter the name of the Person who borrowed a book:",
-            choices=cur_ids,
-            validate=lambda x: x in cur_ids,
+        admNos = [row[1] for row in data]
+
+        admNo = questionary.text(
+            "Enter your adm No:",
+            validate=lambda x: x in admNos,
         ).ask()
 
-        amdNo = questionary.text(
-            "Enter the Admission Number:", validate=lambda x: len(x) == 4
-        ).ask()
+        for row in data:
+            if row[1] == admNo:
+                data.remove(row)
 
-        # capping fine
+        with open(self.borrowBook, "w") as fileObject:
+            writer = csv.writer(fileObject)
+            writer.writerows(data)
+            fileObject.close()
 
     def seeAllBooks(self):
         """See All Method.
@@ -207,7 +225,41 @@ class Student:
             fig.show()
 
     def searchByAuthor(self):
-        pass
+        data = None
+
+        with open(self.bookPath, "r") as fileObject:
+            data = list(csv.reader(fileObject))
+
+        authors = []
+        for _row in data:
+            if _row[3] not in authors:
+                authors.append(_row[3])
+
+        authorChoose = questionary.autocomplete(
+            "Enter the author's name:",
+            choices=authors,
+            validate=lambda x: x in authors,
+        ).ask()
+
+        authorData = []
+
+        for _row in data:
+            if _row[3] == authorChoose:
+                authorData.append(_row)
+
+        print(
+            tabulate(
+                authorData,
+                headers=[
+                    "ISBN",
+                    "BOOK NAME",
+                    "PAGES",
+                    "AUTHOR NAME",
+                    "GENRE",
+                ],
+                tablefmt="fancy_grid",
+            )
+        )
 
     def searchByGenre(self):
         data = None
@@ -282,21 +334,17 @@ class Teacher(Student):
 
     def run(self) -> None:
         """Run method for Teacher Class"""
-        actions = [
-            "Add A Book",  # 0,
-            "Remove a Book",  # 1,
-            "See All Books",  # 2,
-            "Borrow A Book",  # 3,
-            "Return A Book",  # 4,
-            "Search by Author",
-            "Search by Genre" "EXIT",  # 5,
-        ]
+        actions = self.baseActions.extend(
+            [
+                "Add Book",
+                "Remove Book",
+            ]
+        )
 
         while True:
             action = questionary.select(
                 "Choose an action:",
                 choices=actions,
-                default=actions[5],
             ).ask()
 
             if action == actions[5]:
@@ -374,6 +422,7 @@ class Teacher(Student):
                 writer = csv.writer(fileObject)
                 writer.writerows(data)
                 fileObject.close()
+
         except Exception as e:
             print(e)
             print("Unable to add book")
