@@ -6,7 +6,6 @@ import re
 
 from setup import setup
 from tabulate import tabulate
-import pandas as pd
 import plotly.graph_objects as go
 from pytrends.request import TrendReq
 import questionary
@@ -118,7 +117,7 @@ class Student:
         toBeIns = [book, rollNo, name, today]
 
         with open(self.borrowPath, "r") as fileObject:
-            reader = csv.reader(fileObj)
+            reader = csv.reader(fileObject)
 
             for row in reader:
                 if len(row) != 0:
@@ -164,24 +163,27 @@ class Student:
             if row[1] == admNo:
                 dateBorrowed = row[3]
                 comps = dateBorrowed.split("-")
-                dateBorrowed = date(comps[0], comps[1], comps[2])
+                dateBorrowed = date(int(comps[0]), int(comps[1]), int(comps[2]))
                 data.remove(row)
 
         today = date.today()
 
         daysBorrowed: int = (today - dateBorrowed).days
 
-        if daysBorrowed <= 50:
+        if daysBorrowed <= 7:
+            print("Amount to be Paid is Rs. 100")
+
+        elif daysBorrowed < 50:
             print("-" * os.get_terminal_size().columns)
             print(
-                f"Amount to Be Paid: {dateBorrowed*35}".center(
+                f"Amount to Be Paid: {daysBorrowed*35}".center(
                     os.get_terminal_size().columns
                 )
             )
             print("-" * os.get_terminal_size().columns)
         else:
             print("You have exceeded the number of days to return the book!")
-            print("You must pay a fine of Rs. 650")
+            print("You must pay a fine of Rs. 500")
 
         with open(self.borrowBook, "w") as fileObject:
             writer = csv.writer(fileObject)
@@ -335,7 +337,11 @@ class Teacher(Student):
 
     def __init__(self) -> None:
         super().__init__()
+        attempts = 3
         while True:
+            attempts -= 1
+            if attempts == 0:
+                break
             username = questionary.text(
                 "Enter your username:",
                 default="root",
@@ -351,6 +357,7 @@ class Teacher(Student):
                 print("-" * os.get_terminal_size().columns)
                 print("Teacher Mode".center(os.get_terminal_size().columns))
                 print("-" * os.get_terminal_size().columns)
+                break
             else:
                 print("-" * os.get_terminal_size().columns)
                 print(
@@ -362,17 +369,17 @@ class Teacher(Student):
 
     def run(self) -> None:
         """Run method for Teacher Class"""
-        actions = self.baseActions.extend(
+        self.baseActions.extend(
             [
                 "Add Book",
                 "Remove Book",
             ]
         )
+        actions = self.baseActions
 
         while True:
             action = questionary.select(
-                "Choose an action:",
-                choices=actions,
+                "Choose an action:", choices=actions, default=actions[0]
             ).ask()
 
             if action == actions[0]:
@@ -465,14 +472,14 @@ class Teacher(Student):
         checker_isbn = re.compile(pattern=pattern_isbn)
 
         with open(self.bookPath, "r") as fileObject:
-            data = [row for row in csv.reader(fileObject)]
+            data = [row for row in csv.reader(fileObject) if len(row)!=0]
             curISBNs = [row[0] for row in data]
 
         while True:
             isbnToRemove = questionary.text(
                 "Enter the ISBN of the Book that you want to remove"
-            ).application
-            if not checker_isbn(isbnToRemove):
+            ).ask()
+            if not checker_isbn.match(isbnToRemove):
                 print("Wrong format.\n Try Again!")
                 print("Correct format is : ###-####-###")
             elif isbnToRemove not in curISBNs:
@@ -513,7 +520,7 @@ class MainApp:
         if action == options[1]:
             main = Student()
             main.run()
-        elif action == options[2]:
+        elif action == options[0]:
             main = Teacher()
             main.run()
 
