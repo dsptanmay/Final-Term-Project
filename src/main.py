@@ -8,7 +8,6 @@ from setup import setup
 from tabulate import tabulate
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from pytrends.request import TrendReq
 import questionary
 
@@ -160,12 +159,29 @@ class Student:
             validate=lambda x: x in admNos,
         ).ask()
 
+        dateBorrowed = date(2020, 1, 1)
         for row in data:
             if row[1] == admNo:
                 dateBorrowed = row[3]
+                comps = dateBorrowed.split("-")
+                dateBorrowed = date(comps[0], comps[1], comps[2])
                 data.remove(row)
 
         today = date.today()
+
+        daysBorrowed: int = (today - dateBorrowed).days
+
+        if daysBorrowed <= 50:
+            print("-" * os.get_terminal_size().columns)
+            print(
+                f"Amount to Be Paid: {dateBorrowed*35}".center(
+                    os.get_terminal_size().columns
+                )
+            )
+            print("-" * os.get_terminal_size().columns)
+        else:
+            print("You have exceeded the number of days to return the book!")
+            print("You must pay a fine of Rs. 650")
 
         with open(self.borrowBook, "w") as fileObject:
             writer = csv.writer(fileObject)
@@ -447,6 +463,11 @@ class Teacher(Student):
         """Remove Book Method. Only for Teacher Class"""
         pattern_isbn = "^[0-9]{3}-[0-9]{4}-[0-9]{3}$"
         checker_isbn = re.compile(pattern=pattern_isbn)
+
+        with open(self.bookPath, "r") as fileObject:
+            data = [row for row in csv.reader(fileObject)]
+            curISBNs = [row[0] for row in data]
+
         while True:
             isbnToRemove = questionary.text(
                 "Enter the ISBN of the Book that you want to remove"
@@ -454,6 +475,8 @@ class Teacher(Student):
             if not checker_isbn(isbnToRemove):
                 print("Wrong format.\n Try Again!")
                 print("Correct format is : ###-####-###")
+            elif isbnToRemove not in curISBNs:
+                print("Invalid ISBN!\nTry again!")
             else:
                 break
 
@@ -462,7 +485,6 @@ class Teacher(Student):
             for row in data:
                 if row[0] == isbnToRemove:
                     data.remove(row)
-
             fileObject.close()
         with open(self.bookPath, "w") as fileObject:
             writer = csv.writer(fileObject)
