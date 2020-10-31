@@ -12,6 +12,7 @@ from plotly.subplots import make_subplots
 from pytrends.request import TrendReq
 import questionary
 
+
 class Student:
     """
     Class for Student Mode.
@@ -35,8 +36,7 @@ class Student:
             "Return A Book",
             "See All Books",
             "Search by Author",
-            "Search by Genre"
-            "EXIT",
+            "Search by Genre" "EXIT",
         ]
 
         while True:
@@ -83,7 +83,9 @@ class Student:
             return
 
         else:
-            name = questionary.text("Enter your name: ",).ask()
+            name = questionary.text(
+                "Enter your name: ",
+            ).ask()
 
             print("Name & Roll No. accepted!")
 
@@ -100,7 +102,8 @@ class Student:
         book = questionary.autocomplete(
             "Choose a book",
             choices=cur_books,
-            validate=lambda b: b in cur_books,).ask()
+            validate=lambda b: b in cur_books,
+        ).ask()
 
         toBeIns = [book, rollNo, name, today]
 
@@ -131,6 +134,10 @@ class Student:
             "Enter the name of the Person who borrowed a book:",
             choices=cur_ids,
             validate=lambda x: x in cur_ids,
+        ).ask()
+
+        amdNo = questionary.text(
+            "Enter the Admission Number:", validate=lambda x: len(x) == 4
         ).ask()
 
         # capping fine
@@ -168,15 +175,14 @@ class Student:
         timeFrames = {
             "1 Month": "today 1-m",
             "3 Months": "today 3-m",
-            "12 Months": "today 12-m"
+            "12 Months": "today 12-m",
         }
 
         tmf = questionary.select(
             "Choose the timeframe for the data:",
-            choices=list(
-                timeFrames.keys()
-            ),
-            default="3 Months").ask()
+            choices=list(timeFrames.keys()),
+            default="3 Months",
+        ).ask()
 
         topics = [name]
 
@@ -189,8 +195,7 @@ class Student:
         df.drop(labels="isPartial", inplace=True)
 
         try:
-            data = go.Scatter(
-                x=df.index, y=df[name], name=name, mode="lines+markers")
+            data = go.Scatter(x=df.index, y=df[name], name=name, mode="lines+markers")
 
         except Exception as e:
             print("Error in building figure!")
@@ -205,7 +210,35 @@ class Student:
         pass
 
     def searchByGenre(self):
-        pass
+        data = None
+        with open(self.bookPath, "r") as fileObject:
+            data = list(csv.reader(fileObject))
+
+            genres = []
+            for row in data:
+                if row[4] not in genres:
+                    genres.append(row[4])
+
+        genreChoose = questionary.select(
+            "Choose a genre:", choices=genres, default=genres[0]
+        ).ask()
+
+        genreData = []
+
+        for row in data:
+            if row[4] == genreChoose:
+                genreData.append(row)
+
+        print("All Books with Genre {} are:".format(genreChoose))
+
+        print(
+            tabulate(
+                genreData,
+                headers=["ISBN", "BOOK NAME", "PAGES", "AUTHOR", "GENRE"],
+                tablefmt="fancy_grid",
+            )
+        )
+
 
 # TODO:  Search : Author/ Books Name
 
@@ -235,9 +268,9 @@ class Teacher(Student):
 
             if username == "root" and password == "password":
                 print("Username and password validated successfully!")
-                print("-"*os.get_terminal_size().columns)
+                print("-" * os.get_terminal_size().columns)
                 print("Teacher Mode".center(os.get_terminal_size().columns))
-                print("-"*os.get_terminal_size().columns)
+                print("-" * os.get_terminal_size().columns)
             else:
                 print("-" * os.get_terminal_size().columns)
                 print(
@@ -255,7 +288,8 @@ class Teacher(Student):
             "See All Books",  # 2,
             "Borrow A Book",  # 3,
             "Return A Book",  # 4,
-            "EXIT",  # 5,
+            "Search by Author",
+            "Search by Genre" "EXIT",  # 5,
         ]
 
         while True:
@@ -303,7 +337,8 @@ class Teacher(Student):
         while True:
             isbn_new = questionary.text(
                 "Enter the ISBN of your book\
-                (It should be of the format ###-####-###): ").ask()
+                (It should be of the format ###-####-###): "
+            ).ask()
             if isbn_new in cur_isbn:
                 print("ISBN is already in use!")
                 print("Try Again!")
@@ -327,7 +362,8 @@ class Teacher(Student):
         categoryNew = questionary.autocomplete(
             "Enter the Category: ",
             choices=cur_categ,
-            validate=lambda cat: cat in cur_categ).ask()
+            validate=lambda cat: cat in cur_categ,
+        ).ask()
 
         toBeIns = [isbn_new, bookNew, pagesNew, authorNew, categoryNew]
 
@@ -352,6 +388,9 @@ class Teacher(Student):
             "Enter the ISBN of the Book:",
             validate=lambda x: type(x) == int and len(x) > 5,
         ).ask()
+
+        with open(self.bookPath, "r") as fileObject:
+            pass
 
 
 class MainApp:
