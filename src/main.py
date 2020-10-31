@@ -162,7 +162,10 @@ class Student:
 
         for row in data:
             if row[1] == admNo:
+                dateBorrowed = row[3]
                 data.remove(row)
+
+        today = date.today()
 
         with open(self.borrowBook, "w") as fileObject:
             writer = csv.writer(fileObject)
@@ -356,22 +359,22 @@ class Teacher(Student):
                 choices=actions,
             ).ask()
 
-            if action == actions[5]:
-                print("Exiting program...")
-                exit()
-            elif action == actions[4]:
-                self.returnBook()
-            elif action == actions[3]:
+            if action == actions[0]:
                 self.borrowBook()
+            elif action == actions[1]:
+                self.returnBook()
             elif action == actions[2]:
                 self.seeAllBooks()
-            elif action == actions[1]:
-                self.removeBook()
-            elif action == actions[0]:
+            elif action == actions[3]:
+                self.searchByAuthor()
+            elif action == actions[4]:
+                self.searchByGenre()
+            elif action == actions[5]:
+                exit()
+            elif action == actions[6]:
                 self.addBook()
-            else:
-                print("Error in choosing action.")
-                exit(0)
+            elif action == actions[7]:
+                self.removeBook()
 
     def addBook(self):
         """Add Book Method. Only for Teacher Class"""
@@ -442,13 +445,30 @@ class Teacher(Student):
 
     def removeBook(self):
         """Remove Book Method. Only for Teacher Class"""
-        isbn = questionary.text(
-            "Enter the ISBN of the Book:",
-            validate=lambda x: type(x) == int and len(x) > 5,
-        ).ask()
+        pattern_isbn = "^[0-9]{3}-[0-9]{4}-[0-9]{3}$"
+        checker_isbn = re.compile(pattern=pattern_isbn)
+        while True:
+            isbnToRemove = questionary.text(
+                "Enter the ISBN of the Book that you want to remove"
+            ).application
+            if not checker_isbn(isbnToRemove):
+                print("Wrong format.\n Try Again!")
+                print("Correct format is : ###-####-###")
+            else:
+                break
 
         with open(self.bookPath, "r") as fileObject:
-            pass
+            data = [row for row in csv.reader(fileObject) if len(row) == 5]
+            for row in data:
+                if row[0] == isbnToRemove:
+                    data.remove(row)
+
+            fileObject.close()
+        with open(self.bookPath, "w") as fileObject:
+            writer = csv.writer(fileObject)
+
+            writer.writerows(data)
+            print("Book successfully deleted!")
 
 
 class MainApp:
@@ -471,7 +491,7 @@ class MainApp:
         if action == options[1]:
             main = Student()
             main.run()
-        else:
+        elif action == options[2]:
             main = Teacher()
             main.run()
 
