@@ -12,7 +12,6 @@ from plotly.subplots import make_subplots
 from pytrends.request import TrendReq
 import questionary
 
-
 class Student:
     """
     Class for Student Mode.
@@ -47,10 +46,10 @@ class Student:
 
             if action == actions[0]:
                 self.borrowBook()
-           
+
             elif action == actions[1]:
                 self.returnBook()
-           
+
             elif action == actions[2]:
                 pass
 
@@ -63,7 +62,7 @@ class Student:
                 exit()
 
     def borrowBook(self):
-        """Borrow Method. 
+        """Borrow Method.
         Provides borrowing functionality for both Student & Teacher Class."""
 
         with open(self.borrowPath, "r") as file:
@@ -99,7 +98,9 @@ class Student:
             fileObj.close()
 
         book = questionary.autocomplete(
-            "Choose a book", choices=cur_books, validate=lambda b: b in cur_books).ask()
+            "Choose a book",
+            choices=cur_books,
+            validate=lambda b: b in cur_books,).ask()
 
         toBeIns = [book, rollNo, name, today]
 
@@ -118,7 +119,8 @@ class Student:
             return
 
     def returnBook(self):
-        """Return Method. Provides return functionality for both Student & Teacher Class."""
+        """Return Method.
+        Provides return functionality for both Student & Teacher Class."""
         with open("data/borrowed.csv", "r") as fileObject:
             reader = csv.reader(fileObject)
             cur_ids = []
@@ -134,7 +136,7 @@ class Student:
         # capping fine
 
     def seeAllBooks(self):
-        """See All Method. 
+        """See All Method.
         Allows either students or teachers to see All books present."""
 
         with open(self.bookPath, "r") as fileObject:
@@ -160,7 +162,8 @@ class Student:
 
     def plotting(self, name):
         """
-        Method for plotting a graph based on interest in book over a period of time.
+        Method for plotting a graph based on
+        interest in book over a period of time.
         """
         timeFrames = {
             "1 Month": "today 1-m",
@@ -168,8 +171,12 @@ class Student:
             "12 Months": "today 12-m"
         }
 
-        tmf = questionary.select("Choose the timeframe for the data:", choices=list(
-            timeFrames.keys()), default="3 Months").ask()
+        tmf = questionary.select(
+            "Choose the timeframe for the data:",
+            choices=list(
+                timeFrames.keys()
+            ),
+            default="3 Months").ask()
 
         topics = [name]
 
@@ -194,10 +201,8 @@ class Student:
             fig = go.Figure(data=data)
             fig.show()
 
-
     def searchByAuthor(self):
         pass
-
 
     def searchByGenre(self):
         pass
@@ -297,7 +302,8 @@ class Teacher(Student):
 
         while True:
             isbn_new = questionary.text(
-                "Enter the ISBN of your book(It should be of the format ###-####-###): ").ask()
+                "Enter the ISBN of your book\
+                (It should be of the format ###-####-###): ").ask()
             if isbn_new in cur_isbn:
                 print("ISBN is already in use!")
                 print("Try Again!")
