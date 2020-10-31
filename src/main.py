@@ -134,6 +134,15 @@ class Student:
             writer.writerows(data_borrow)
             print("Book borrowed successfully!")
             file.close()
+
+        plot = questionary.confirm(
+            "Do you wish to see a graph showing interest in your book over a period of time?",
+            default=True,
+        ).ask()
+
+        if plot:
+            self.plotting(book)
+        else:
             return
 
     def returnBook(self):
