@@ -27,6 +27,7 @@ class Student:
             "See All Books",
             "Search By Author",
             "Search By Genre",
+            "See Trends for a Particular Book",
             "EXIT",
         ]
 
@@ -42,7 +43,7 @@ class Student:
             action = questionary.select(
                 "Choose an action:",
                 choices=self.baseActions,
-                default=self.baseActions[5],
+                default=self.baseActions[6],
             ).ask()
 
             if action == self.baseActions[0]:
@@ -61,8 +62,10 @@ class Student:
                 self.searchByGenre()
 
             elif action == self.baseActions[5]:
-                print("Exiting program now...")
-                exit(0)
+                self.plotting()
+
+            else:
+                exit()
 
     def borrowBook(self):
         """Borrow Method.
@@ -215,34 +218,46 @@ class Student:
                 )
             )
 
-    def plotting(self, name):
+    def plotting(self):
         """
         Method for plotting a graph based on
         interest in book over a period of time.
         """
+        with open(self.bookPath, "r") as plottingFile:
+            data = [row for row in csv.reader(plottingFile) if len(row) != 0]
+
+            currentBooks = [row[1] for row in data if len(row) != 0]
+
+            plottingFile.close()
+
+        name = questionary.autocomplete(
+            "Enter the name of the book for which you want the trends:",
+            choices=currentBooks,
+            # validate=lambda x: x in currentBooks
+        ).ask()
         timeFrames = {
             "1 Month": "today 1-m",
             "3 Months": "today 3-m",
-            "12 Months": "today 12-m",
+            "12 Months": "today 1-y",
         }
 
         tmf = questionary.select(
             "Choose the timeframe for the data:",
             choices=list(timeFrames.keys()),
-            default="3 Months",
+            default=list(timeFrames.keys())[0],
         ).ask()
 
-        tmf = timeFrames[tmf]
+        tmfValue = timeFrames[tmf]
 
         topics = [name]
+        print(tmfValue, topics)
+        pytrend = TrendReq(hl="en-US", retries=3)
 
-        pytrend = TrendReq()
-
-        pytrend.build_payload(kw_list=topics, timeframe=tmf)
+        pytrend.build_payload(kw_list=[topics], geo="IND", timeframe="today 3-m")
 
         df = pytrend.interest_over_time()
 
-        df.drop(labels="isPartial", inplace=True)
+        # df.drop(labels="isPartial", inplace=True)
 
         try:
             data = go.Scatter(x=df.index, y=df[name], name=name, mode="lines+markers")
@@ -343,6 +358,7 @@ class Teacher(Student):
         while True:
             attempts -= 1
             if attempts == 0:
+                print("3 attemps used up!")
                 break
             username = questionary.text(
                 "Enter your username:",
@@ -394,12 +410,14 @@ class Teacher(Student):
                 self.searchByAuthor()
             elif action == actions[4]:
                 self.searchByGenre()
-            elif action == actions[5]:
-                exit()
             elif action == actions[6]:
-                self.addBook()
+                self.plotting()
             elif action == actions[7]:
+                self.addBook()
+            elif action == actions[8]:
                 self.removeBook()
+            else:
+                exit(0)
 
     def addBook(self):
         """Add Book Method. Only for Teacher Class"""
@@ -474,7 +492,7 @@ class Teacher(Student):
         checker_isbn = re.compile(pattern=pattern_isbn)
 
         with open(self.bookPath, "r") as fileObject:
-            data = [row for row in csv.reader(fileObject) if len(row)!=0]
+            data = [row for row in csv.reader(fileObject) if len(row) != 0]
             curISBNs = [row[0] for row in data]
 
         while True:
