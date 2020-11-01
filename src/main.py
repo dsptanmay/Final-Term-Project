@@ -232,6 +232,8 @@ class Student:
             default="3 Months",
         ).ask()
 
+        tmf = timeFrames[tmf]
+
         topics = [name]
 
         pytrend = TrendReq()
