@@ -150,7 +150,8 @@ class Student:
             if row[1] == admNo:
                 dateBorrowed = row[3]
                 comps = dateBorrowed.split("-")
-                dateBorrowed = date(int(comps[0]), int(comps[1]), int(comps[2]))
+                dateBorrowed = date(
+                    int(comps[0]), int(comps[1]), int(comps[2]))
                 data.remove(row)
 
         today = date.today()
@@ -214,36 +215,36 @@ class Student:
 
             plottingFile.close()
 
-        name = questionary.text(
-            "Enter the name of the book for which you want the trends:",
-            validate=lambda x: x in currentBooks,
-        ).ask()
+        book = questionary.autocomplete(
+            "Enter the name of the book:", choices=currentBooks, validate=lambda x: x in currentBooks)
+
+        bookVal = book.ask()
         timeFrames = {
             "1 Month": "today 1-m",
             "3 Months": "today 3-m",
-            "12 Months": "today 1-y",
+            "12 Months": "today 12-m",
         }
 
         tmf = questionary.select(
-            "Choose the timeframe for the data:",
-            choices=list(timeFrames.keys()),
-            default=list(timeFrames.keys())[0],
-        ).ask()
+            "Choose the timeframe:", choices=list(timeFrames.keys())).ask()
 
         tmfValue = timeFrames[tmf]
+        pytrend = TrendReq()
+        try:
+            pytrend.build_payload(kw_list=[bookVal], timeframe=tmfValue)
+        except Exception as e:
+            print("Error in building data for {}".format(bookVal))
+            return
 
-        topics = [name]
-        print(tmfValue, topics)
-        pytrend = TrendReq(hl="en-US", retries=3)
+        else:
+            print("Data successfully built!")
+            df = pytrend.interest_over_time()
 
-        pytrend.build_payload(kw_list=[topics], timeframe="today 3-m")
-
-        df = pytrend.interest_over_time()
-
-        # df.drop(labels="isPartial", inplace=True)
+            df.drop(labels="isPartial", axis=1, inplace=True)
 
         try:
-            data = go.Scatter(x=df.index, y=df[name], name=name, mode="lines+markers")
+            data = go.Scatter(
+                x=df.index, y=df[bookVal], name=bookVal, mode="lines+markers")
 
         except Exception as e:
             print("Error in building figure!")
@@ -251,6 +252,7 @@ class Student:
             return
 
         else:
+            print("Figure built successfully!!")
             fig = go.Figure(data=data)
             fig.show()
 
