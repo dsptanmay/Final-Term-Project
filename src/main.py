@@ -160,7 +160,7 @@ class Student:
         if daysBorrowed <= 7:
             print("Amount to be Paid is Rs. 100")
 
-        elif daysBorrowed < 50:
+        elif 7 < daysBorrowed < 50:
             print("-" * os.get_terminal_size().columns)
             print(
                 f"Amount to Be Paid: {daysBorrowed*35}".center(
@@ -172,7 +172,7 @@ class Student:
             print("You have exceeded the number of days to return the book!")
             print("You must pay a fine of Rs. 500")
 
-        with open(self.borrowBook, "w") as fileObject:
+        with open(self.borrowBook, "w", newline="") as fileObject:
             writer = csv.writer(fileObject)
             writer.writerows(data)
             fileObject.close()
@@ -337,12 +337,14 @@ class Teacher(Student):
 
     def __init__(self) -> None:
         super().__init__()
+
+    def verify(self):
         attempts = 3
         while True:
             attempts -= 1
             if attempts == 0:
                 print("3 attemps used up!")
-                break
+                exit()
             username = questionary.text(
                 "Enter your username:",
                 default="root",
@@ -360,16 +362,15 @@ class Teacher(Student):
                 print("-" * os.get_terminal_size().columns)
                 break
             else:
-                print("-" * os.get_terminal_size().columns)
                 print(
-                    "Wrong passsword!\nTry again!".center(
+                    "Wrong passsword!".center(
                         os.get_terminal_size().columns
                     ).capitalize()
                 )
-                print("-" * os.get_terminal_size().columns)
 
     def run(self) -> None:
         """Run method for Teacher Class"""
+        self.verify()
         self.baseActions.extend(
             [
                 "Add Book",
@@ -393,7 +394,7 @@ class Teacher(Student):
                 self.searchByAuthor()
             elif action == actions[4]:
                 self.searchByGenre()
-            elif action == actions[6]:
+            elif action == actions[5]:
                 self.plotting()
             elif action == actions[7]:
                 self.addBook()
@@ -443,7 +444,10 @@ class Teacher(Student):
             else:
                 break
 
-        authorNew = questionary.text("Enter the Author's name:").ask()
+        authorNew = questionary.text(
+            "Enter the Author's name:",
+            validate=lambda x: len(x.split(" ")) >= 2,
+        ).ask()
 
         categoryNew = questionary.autocomplete(
             "Enter the Category: ",
@@ -456,7 +460,7 @@ class Teacher(Student):
         data.append(toBeIns)
 
         try:
-            with open(self.bookPath, "w") as fileObject:
+            with open(self.bookPath, "w", newline="") as fileObject:
                 writer = csv.writer(fileObject)
                 writer.writerows(data)
                 fileObject.close()
@@ -474,9 +478,10 @@ class Teacher(Student):
         pattern_isbn = "^[0-9]{3}-[0-9]{4}-[0-9]{3}$"
         checker_isbn = re.compile(pattern=pattern_isbn)
 
-        with open(self.bookPath, "r") as fileObject:
+        with open(self.bookPath, "r", newline="") as fileObject:
             data = [row for row in csv.reader(fileObject) if len(row) != 0]
             curISBNs = [row[0] for row in data]
+            fileObject.close()
 
         while True:
             isbnToRemove = questionary.text(
@@ -490,13 +495,15 @@ class Teacher(Student):
             else:
                 break
 
-        with open(self.bookPath, "r") as fileObject:
-            data = [row for row in csv.reader(fileObject) if len(row) == 5]
+        with open(self.bookPath, "r", newline="") as file_book_02:
+            data = [row for row in csv.reader(file_book_02) if len(row) == 5]
             for row in data:
-                if row[0] == isbnToRemove:
+                if str(row[0]).rstrip(" ").lstrip(" ") == isbnToRemove:
                     data.remove(row)
-            fileObject.close()
-        with open(self.bookPath, "w") as fileObject:
+                    print(row)
+            file_book_02.close()
+
+        with open(self.bookPath, "w", newline="") as fileObject:
             writer = csv.writer(fileObject)
 
             writer.writerows(data)
