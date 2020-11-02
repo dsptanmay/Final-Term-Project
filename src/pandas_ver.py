@@ -13,11 +13,12 @@ class Person:
             "Return A Book",
             "Search by Author",
             "Search by Category",
+            "See Trends for Book"
             "EXIT",
         ]
 
         action = qr.select(
-            "Choose an action: ", choices=choices, default=choices[4]
+            "Choose an action: ", choices=choices
         ).ask()
 
         if action == choices[0]:
@@ -48,7 +49,12 @@ class Person:
             ],
         )
 
-        dataset_borrowed = pd.read_csv(self.borrowedPath,names=["BOOK NAME","ADMISSION NO.","NAME","DATE BORROWED"])
+        dataset_borrowed = pd.read_csv(
+            self.borrowedPath,names=["BOOK NAME",
+                                     "ADMISSION NO.",
+                                     "NAME",
+                                     "DATE BORROWED",
+                                     ],)
 
         print(dataset_books.head())
 
