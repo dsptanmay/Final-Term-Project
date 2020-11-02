@@ -7,7 +7,7 @@ def setup():
     installed = {pkg.key for pkg in pkg_resources.working_set}
     required = {
         "plotly",
-        "prompt-toolkit==2.0.10"
+        "prompt-toolkit==2.0.10",
         "questionary",
         "tabulate",
         "black",

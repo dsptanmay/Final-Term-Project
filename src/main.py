@@ -71,8 +71,8 @@ class Student:
         """Borrow Method.
         Provides borrowing functionality for both Student & Teacher Class."""
 
-        with open(self.borrowPath, "r") as file:
-            reader = csv.reader(file)
+        with open(self.borrowPath, "r", newline="") as file_borrow_01:
+            reader = csv.reader(file_borrow_01)
 
             data_borrow = list(reader)
             cur_ids = []
@@ -80,7 +80,7 @@ class Student:
                 if len(row) == 4:
                     cur_ids.append(row[1])
 
-            file.close()
+            file_borrow_01.close()
 
         rollNo = questionary.text(
             "Enter your Admission No:",
@@ -92,16 +92,15 @@ class Student:
             print("First return that book!")
             return
 
-        else:
-            name = questionary.text(
-                "Enter your name: ",
-            ).ask()
+        name = questionary.text(
+            "Enter your name: ",
+        ).ask()
 
-            print("Name & Admin No. accepted!")
+        print("Name & Admin No. accepted!")
 
-        with open(self.bookPath, "r") as fileObj:
+        with open(self.bookPath, "r", newline="") as fileBooks:
             data_books = []
-            for row in csv.reader(fileObj):
+            for row in csv.reader(fileBooks):
                 if len(row) != 0:
                     data_books.append(row)
 
@@ -109,7 +108,7 @@ class Student:
 
             today = str(date.today())
 
-            fileObj.close()
+            fileBooks.close()
 
         book = questionary.autocomplete(
             "Choose a book",
@@ -118,33 +117,18 @@ class Student:
         ).ask()
 
         toBeIns = [book, rollNo, name, today]
+        data_borrow = [
+            row
+            for row in csv.reader(open(self.borrowPath, "r", newline=""))
+            if len(row) != 0
+        ]
+        data_borrow.append(toBeIns)
 
-        with open(self.borrowPath, "r") as fileObject:
-            reader = csv.reader(fileObject)
-
-            for row in reader:
-                if len(row) != 0:
-                    data_borrow.append(row)
-
-            data_borrow.append(toBeIns)
-
-            fileObject.close()
-
-        with open(self.borrowPath, "w") as file:
+        with open(self.borrowPath, "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerows(data_borrow)
             print("Book borrowed successfully!")
             file.close()
-
-        plot = questionary.confirm(
-            "Do you wish to see a graph showing interest in your book over a period of time?",
-            default=True,
-        ).ask()
-
-        if plot:
-            self.plotting(book)
-        else:
-            return
 
     def returnBook(self):
         """Return Method.
@@ -230,10 +214,9 @@ class Student:
 
             plottingFile.close()
 
-        name = questionary.autocomplete(
+        name = questionary.text(
             "Enter the name of the book for which you want the trends:",
-            choices=currentBooks,
-            # validate=lambda x: x in currentBooks
+            validate=lambda x: x in currentBooks,
         ).ask()
         timeFrames = {
             "1 Month": "today 1-m",
@@ -253,7 +236,7 @@ class Student:
         print(tmfValue, topics)
         pytrend = TrendReq(hl="en-US", retries=3)
 
-        pytrend.build_payload(kw_list=[topics], geo="IND", timeframe="today 3-m")
+        pytrend.build_payload(kw_list=[topics], timeframe="today 3-m")
 
         df = pytrend.interest_over_time()
 
