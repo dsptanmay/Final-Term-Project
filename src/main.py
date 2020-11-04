@@ -173,7 +173,7 @@ class Student:
             print("You have exceeded the number of days to return the book!")
             print("You must pay a fine of Rs. 500")
 
-        with open(self.borrowBook, "w", newline="") as fileObject:
+        with open(self.borrowPath, "w", newline="") as fileObject:
             writer = csv.writer(fileObject)
             writer.writerows(data)
             fileObject.close()
