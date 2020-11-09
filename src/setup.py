@@ -32,6 +32,7 @@ def setup():
                     stdout=sp.DEVNULL,
                 )
             except Exception as e:
+                print(e)
                 print("An error occurred in installing modules!")
             else:
-                print(f"{module.capitalize()} was successfully installed!")
+                print(f"{module} was successfully installed!")
