@@ -150,8 +150,7 @@ class Student:
             if row[1] == admNo:
                 dateBorrowed = row[3]
                 comps = dateBorrowed.split("-")
-                dateBorrowed = date(
-                    int(comps[0]), int(comps[1]), int(comps[2]))
+                dateBorrowed = date(int(comps[0]), int(comps[1]), int(comps[2]))
                 data.remove(row)
 
         today = date.today()
@@ -216,7 +215,10 @@ class Student:
             plottingFile.close()
 
         book = questionary.autocomplete(
-            "Enter the name of the book:", choices=currentBooks, validate=lambda x: x in currentBooks)
+            "Enter the name of the book:",
+            choices=currentBooks,
+            validate=lambda x: x in currentBooks,
+        )
 
         bookVal = book.ask()
         timeFrames = {
@@ -226,7 +228,8 @@ class Student:
         }
 
         tmf = questionary.select(
-            "Choose the timeframe:", choices=list(timeFrames.keys())).ask()
+            "Choose the timeframe:", choices=list(timeFrames.keys())
+        ).ask()
 
         tmfValue = timeFrames[tmf]
         pytrend = TrendReq()
@@ -244,7 +247,8 @@ class Student:
 
         try:
             data = go.Scatter(
-                x=df.index, y=df[bookVal], name=bookVal, mode="lines+markers")
+                x=df.index, y=df[bookVal], name=bookVal, mode="lines+markers"
+            )
 
         except Exception as e:
             print("Error in building figure!")
