@@ -1,14 +1,14 @@
-import os
 import csv
-from datetime import date
+import os
 import re
+from datetime import date
 
+import plotly.graph_objects as go
+import questionary
+from pytrends.request import TrendReq
+from tabulate import tabulate
 
 from setup import setup
-from tabulate import tabulate
-import plotly.graph_objects as go
-from pytrends.request import TrendReq
-import questionary
 
 
 class Student:
